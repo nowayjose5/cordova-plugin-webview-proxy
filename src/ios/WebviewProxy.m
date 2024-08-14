@@ -54,7 +54,12 @@
             // Since iOS 16 the url is not automatically encoded anymore.
             // Here it is decoded and encoded again, so it is always encoded as needed regardless of the iOS Version.
             startPath = [startPath stringByRemovingPercentEncoding];
-            startPath = [startPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+            // these characters should be the characters in URLQueryAllowedCharacterSet + the "," character
+            // checkout the characters in this SO anwser: https://stackoverflow.com/a/8086845
+            // approach for creating custom encoding set is inspired from this SO answer: https://stackoverflow.com/a/29023136
+            NSString *charactersToEscape = @"#%<>[\\]^`{|}, ";
+            NSCharacterSet *customEncodingSet = [[NSCharacterSet characterSetWithCharactersInString:charactersToEscape] invertedSet];
+            startPath = [startPath stringByAddingPercentEncodingWithAllowedCharacters:customEncodingSet];
             NSURL * requestUrl = [NSURL URLWithString:startPath];
             NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
             [request setHTTPMethod:method];
